@@ -3,12 +3,12 @@
 (require/typed racket/base [string-append (-> String String String)])
 
 (: next-margin (-> String Boolean String))
-(define (next-margin margin last-child?)
-  (cond [(and last-child? (equal? margin "")) "`-"]
+(define (next-margin margin for-last-child?)
+  (cond [(and for-last-child? (equal? margin "")) "`-"]
         [(equal? margin "") "+-"]
-        [(and last-child? (equal? (substring margin (- (string-length margin) 2) (string-length margin)) "+-")) (string-append (substring margin 0 (- (string-length margin) 2)) "| `-")]
+        [(and for-last-child? (equal? (substring margin (- (string-length margin) 2) (string-length margin)) "+-")) (string-append (substring margin 0 (- (string-length margin) 2)) "| `-")]
         [(equal? (substring margin (- (string-length margin) 2) (string-length margin)) "+-") (string-append (substring margin 0 (- (string-length margin) 2)) "| +-")]
-        [(and last-child? (equal? (substring margin (- (string-length margin) 2) (string-length margin)) "`-")) (string-append (substring margin 0 (- (string-length margin) 2)) "  `-")]
+        [(and for-last-child? (equal? (substring margin (- (string-length margin) 2) (string-length margin)) "`-")) (string-append (substring margin 0 (- (string-length margin) 2)) "  `-")]
         [else (string-append (substring margin 0 (- (string-length margin) 2)) "  +-")]))
 
 (: display-padding (-> String Void))
@@ -37,27 +37,3 @@
              (tree-display-aux (next-margin margin #t) (last (node-children the-tree)) node-display))))
 
 (provide tree-display)
-
-; TODO move to test file
-(: test-tree (node String))
-(define test-tree
-  (let* ([a (node "a" '())]
-         [b (node "b" '())]
-         [c (node "c" '())]
-         [d (node "d" '())]
-         [e (node "e" '())]
-         [f (node "f" '())]
-         [g (node "g" '())]
-         [ab (node "ab" (list a b))]
-         [cd (node "cd" (list c d))]
-         [cde (node "cde" (list cd e))]
-         [g* (node "g*" (list g))]
-         [fg* (node "fg*" (list f g*))])
-    (node "abcdefg" (list ab cde fg*))))
-
-(: test-node-display (-> (node String) Void))
-(define (test-node-display my-node)
-  (display (node-label my-node)))
-
-(: test (-> Void))
-(define (test) (tree-display test-tree test-node-display))
