@@ -2,12 +2,6 @@
 (require "tree.rkt")
 (require/typed racket/base [string-append (-> String String String)])
 
-(: debranch (-> String String))
-(define (debranch m)
-  (cond [(equal? m "") ""]
-        [(equal? (substring m (- (string-length m) 2) (string-length m)) "+-") "| "]
-        [else "  "])) ; `- is only option and need 'else' to typecheck
-
 (: next-margin (-> String Boolean String))
 (define (next-margin margin last-child?)
   (cond [(and last-child? (equal? margin "")) "`-"]
@@ -16,6 +10,12 @@
         [(equal? (substring margin (- (string-length margin) 2) (string-length margin)) "+-") (string-append (substring margin 0 (- (string-length margin) 2)) "| +-")]
         [(and last-child? (equal? (substring margin (- (string-length margin) 2) (string-length margin)) "`-")) (string-append (substring margin 0 (- (string-length margin) 2)) "  `-")]
         [else (string-append (substring margin 0 (- (string-length margin) 2)) "  +-")]))
+
+(: display-padding (-> String Void))
+(define (display-padding margin)
+  (cond [(equal? margin "") (displayln "|")]
+        [(equal? (substring margin (- (string-length margin) 2) (string-length margin)) "+-") (displayln (string-append (substring margin 0 (- (string-length margin) 2)) "| |"))]
+        [else (displayln (string-append (substring margin 0 (- (string-length margin) 2)) "  |"))]))
 
 (: list-init (All (A) (-> (Listof A) (Listof A))))
 (define (list-init lst)
@@ -32,7 +32,8 @@
       (begin (display margin)
              (node-display the-tree)
              (newline)
-             (map (λ ([c : (node A)]) (begin (tree-display-aux (next-margin margin #f) c node-display))) (list-init (node-children the-tree)))
+             (map (λ ([c : (node A)]) (begin (display-padding margin) (tree-display-aux (next-margin margin #f) c node-display))) (list-init (node-children the-tree)))
+             (display-padding margin)
              (tree-display-aux (next-margin margin #t) (last (node-children the-tree)) node-display))))
 
 (provide tree-display)
